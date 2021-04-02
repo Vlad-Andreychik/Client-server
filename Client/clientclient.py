@@ -4,7 +4,6 @@ import socket
 class Client:
     def __init__(self):
         self.client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.name = input('Enter your login ')
 
     def connect_to_server(self):
         self.client.connect(('localhost', 9009))
@@ -15,6 +14,9 @@ class Client:
     def send_disconnect_message_to_server(self):
         self.client.send('!q'.encode('utf-8'))
 
+    def send_code_message_to_server(self):
+        self.client.send('1'.encode('utf-8'))
+
     def send_message_to_server(self):
         message = input('Message ').encode('utf-8')
         self.client.send(message)
@@ -24,6 +26,9 @@ class Client:
         message = input('Message ').encode('utf-8')
         self.client.sendto(message, ('<broadcast>', 9009))
         return message
+
+    def print_receive_message(self):
+        print(self.client.recv(1024).decode('utf-8'))
 
     def receive_message(self):
         return self.client.recv(1024)

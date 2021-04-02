@@ -27,11 +27,14 @@ class Server:
     def send_msg(conn, msg):
         return conn.send(msg.encode('utf-8'))
 
+    @staticmethod
+    def send_service_msg(conn, msg):
+        conn.send(msg.encode('utf-8'))
+
     def accept_connection(self):
         return self.server.accept()
 
     def close_server(self):
-        print()
         self.server.close()
 
     def register_new_user(self):
