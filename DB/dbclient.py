@@ -6,15 +6,18 @@ class DB:
         self.db = sqlite3.connect(path)
         self.cursor = self.db.cursor()
 
-    def add_user(self, login, password):
-        params = (login, password)
+    def insert(self, value_1, value_2):
+        params = (value_1, value_2)
         self.cursor.execute("INSERT INTO Users VALUES (?, ?)", params)
         self.db.commit()
 
-    def exist_login(self, login):
-        self.cursor.execute(f"""SELECT * FROM Users WHERE login = '{login}'""")
+    def select(self, query):
+        self.cursor.execute(f"""SELECT '{query}' FROM Users""")
         return self.cursor.fetchall()
 
-    def select_for_sign_in(self, login):
-        self.cursor.execute(f"""SELECT password FROM Users WHERE login='{login}'""")
-        return self.cursor.fetchone()[0]
+    def select_where(self, select_query, where_parameter, where_query):
+        self.cursor.execute(f"""SELECT {select_query} FROM Users WHERE {where_parameter}='{where_query}' """)
+        return self.cursor.fetchall()
+
+    def disconnect(self):
+        self.db.close()

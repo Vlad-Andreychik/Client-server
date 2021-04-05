@@ -1,61 +1,58 @@
+import logging
+from user import userclient
 import sys
+import time
 
-from Client import clientclient
+logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
 
-
-def client_on_server(connection=True):
-    while connection:
-        choice = input("""
-        Choose an option:
-        1 - Send message to server
-        2 - Send Broadcast message
-        3 - Take message from the server
-        4 - Disconnect
-        """)
-        if choice == '1':
-            client.send_code_message_to_server()
-            client.send_message_to_server()
-        elif choice == '2':
-            client.send_broadcast_message()
-        elif choice == '3':
-            msg = client.receive_message()
-            print(msg.decode('utf-8'))
-        elif choice == '4':
-            client.send_disconnect_message_to_server()
-            print('You disconnected from the server')
-            connection = False
-        else:
-            print("Try again")
-    sys.exit()
-
-
-client = clientclient.Client()
+client = userclient.User('localhost', 9009)
 client.connect_to_server()
-connected = False
-client.print_receive_message()
-msg = client.send_message_to_server()
-
-# Sign in
-if msg.decode('utf-8') == "1":
-    while connected is False:
-        client.print_receive_message()
+connected = True
+while connected:
+    code = client.receive_message()
+    if code.decode('utf-8') == '!q':
+        connected = False
+        logging.info(f"Disconnected")
+    elif code.decode('utf-8') == '1':
+        message = client.receive_message()
+        logging.info(f"{message.decode('utf-8')}")
         client.send_message_to_server()
-        client.print_receive_message()
-        client.send_message_to_server()
-        answer = client.receive_message().decode('utf-8')
-        if answer == "SUCCESS":
-            print(answer)
-            client_on_server()
-
-# Sign up
-if msg.decode('utf-8') == "2":
-    while connected is False:
-        client.receive_message()
-        client.send_message_to_server()
-        client.receive_message()
-        client.send_message_to_server()
-        answer = client.receive_message()
-        print(answer)
-        if answer == "SUCCESS":
-            connected = True
-            client_on_server()
+    elif code.decode('utf-8') == '2':
+        authorized = True
+        msg = client.receive_message()
+        logging.info(msg.decode('utf-8'))
+        while authorized:
+            choice = input("""
+                    Choose an option:
+                    1 - Send message to server
+                    2 - Send Broadcast message
+                    3 - Take message from the server
+                    4 - Send message to specific user
+                    !q - Disconnect
+                    """)
+            if choice == '1':
+                client.send_code_message_to_server('1')
+                client.send_message_to_server()
+            elif choice == '2':
+                client.send_code_message_to_server('2')
+                user = client.receive_message()
+                logging.info(user.decode('utf-8'))
+                client.send_message_to_server()
+            elif choice == '3':
+                msg = client.receive()
+                logging.info(msg.decode('utf-8'))
+            elif choice == '4':
+                client.send_code_message_to_server('4')
+                user = client.receive_message()
+                logging.info(user.decode('utf-8'))
+                client.send_message_to_server()
+                serv_response = client.receive_message()
+                logging.info(serv_response.decode('utf-8'))
+                client.send_message_to_server()
+            elif choice == '!q':
+                client.send_code_message_to_server('!q')
+                logging.info('You disconnected from the server')
+                client.close_connection()
+                sys.exit()
+            else:
+                logging.info("Try again")
